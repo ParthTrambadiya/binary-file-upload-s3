@@ -1,0 +1,123 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  video-upload-aws
+  Sample SAM Template for video-upload-aws
+
+Parameters:
+  StackStage:
+    Type: String
+    Default: dev
+    Description: Enter dev, test, or prod accroding to your stack, 'dev' is default
+  
+Globals:
+  Function:
+    Runtime: nodejs14.x
+    Timeout: 120
+
+Resources:
+#----S3 Configurations----#
+  #----Upload Bucket----#
+  S3UploadBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: 
+        !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-upload-bucket-'
+            - !Ref StackStage
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: True
+        BlockPublicPolicy: True
+        IgnorePublicAcls: True
+        RestrictPublicBuckets: True
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - GET
+              - PUT
+              - HEAD
+            AllowedOrigins:
+              - "*"
+
+#----Api Gateway Confiurations----#
+  #----HTTP Api----#
+  RESTApiApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: 
+        !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-api-'
+            - !Ref StackStage
+      StageName: !Ref StackStage
+      EndpointConfiguration:
+        Type: EDGE
+      Description: This is public front rest api for charusat report stack.
+      Variables:
+        Stack: !Ref StackStage
+      Auth:
+        DefaultAuthorizer: NONE
+      Cors:
+        AllowMethods: "'POST, GET'"
+        AllowHeaders: "'*'"
+        AllowOrigin: "'*'"
+        MaxAge: "'600'"
+
+#----Lambda Function Configurations----#
+  #----Upload Lambda function----#
+  UploadRequestLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: 
+        !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-upload-function-'
+            - !Ref StackStage
+      CodeUri: functions/
+      Handler: upload.handler
+      Environment:
+        Variables:
+          UPLOAD_BUCKET: !Ref S3UploadBucket  
+      Policies:
+        - S3WritePolicy:
+            BucketName: !Ref S3UploadBucket
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties: 
+            Path: /uploadvideo
+            Method: GET
+            RestApiId: 
+              Ref: RESTApiApiGateway
+
+Outputs:
+#----Api Gateway outputs----#
+  #----Api endpoint----#
+  RestApiBaseUrl:
+    Value: 
+      !Join
+        - ''
+        - - 'https://'
+          - !Ref RESTApiApiGateway
+          - '.execute-api.'
+          - !Ref AWS::Region
+          - '.amazonaws.com'
+  
+#----S3 Outputs----#
+  #----Report Bucket Arn----#
+  UploadBucketArn:
+    Description: Upload bucket arn
+    Value: !GetAtt S3UploadBucket.Arn
+
+  #----Upload Bucket Name----#
+  UploadBucketName:
+    Description: Upload bucket name
+    Value: !Ref S3UploadBucket
+
+
