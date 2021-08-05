@@ -1,7 +1,6 @@
 'use strict'
 
 const AWS = require('aws-sdk')
-AWS.config.update({ region: process.env.AWS_REGION })
 const s3 = new AWS.S3()
 
 const responseSucceeded = {
@@ -19,10 +18,10 @@ module.exports.handler = function(event, context, callback) {
     const Key = `${randomID}.mp4`
   
     const s3Params = {
-        Bucket: 'Bucket-Name',
+        Bucket: 'your-bucket-name',
         Key,
         Expires: 300,
-        ContentType: 'Content-Type'
+        ContentType: 'content-type',
     }
   
     console.log('Params: ', s3Params)
