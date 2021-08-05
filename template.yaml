@@ -1,8 +1,8 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  video-upload-aws
-  Sample SAM Template for video-upload-aws
+  binary-upload-aws
+  Sample SAM Template for binary-upload-aws
 
 Parameters:
   StackStage:
@@ -91,7 +91,7 @@ Resources:
         ApiEvent:
           Type: Api
           Properties: 
-            Path: /uploadvideo
+            Path: /upload
             Method: GET
             RestApiId: 
               Ref: RESTApiApiGateway

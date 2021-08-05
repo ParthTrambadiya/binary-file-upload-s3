@@ -19,10 +19,10 @@ module.exports.handler = function(event, context, callback) {
     const Key = `${randomID}.mp4`
   
     const s3Params = {
-        Bucket: process.env.UPLOAD_BUCKET,
+        Bucket: 'Bucket-Name',
         Key,
         Expires: 300,
-        ContentType: 'video/mp4',
+        ContentType: 'Content-Type'
     }
   
     console.log('Params: ', s3Params)
